@@ -108,11 +108,11 @@ hashripper [options]
 ## Example Usage
 **Crack a hash using 20 threads:**
 ```bash
-hashripper -H 5d41402abc4b2a76b9719d911017c592 -a md5 -w rockyou.txt -t 20
+hashripper -H 5d41402abc4b2a76b9719d911017c592 -a md5 -w /usr/share/wordlists/rockyou.txt -t 20
 ```
 **Crack from a file and save result:**
 ```bash
-hashripper --hashfile hash.txt -a sha256 -w wordlist.txt -o cracked.txt
+hashripper --hashfile /home/kali/Desktop/hash.txt -a sha256 -w /home/kali/Desktop/wordlist.txt -o cracked.txt
 ```
 ---
 
