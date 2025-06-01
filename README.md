@@ -24,7 +24,7 @@ The tool automatically detects the environment and installs itself accordingly.
 ---
 
 ## Supported Hash Algorithms
-Algorithm
+
 `md5`
 `sha1`
 `sha224`
