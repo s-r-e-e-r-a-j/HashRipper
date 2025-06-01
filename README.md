@@ -10,7 +10,6 @@
 -  Supports **17+ hash algorithms**
 -  Crack hashes from command-line or from file
 -  Option to save cracked results to file
--  Handles unknown encodings gracefully
 -  Simple and clean command-line interface
 -  Works on Linux, Termux
 
