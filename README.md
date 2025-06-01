@@ -18,6 +18,7 @@
 ## Compatibility
 - Linux (Debian, RedHat, Arch, etc.)
 - Termux (Android)
+  
 The tool automatically detects the environment and installs itself accordingly.
 
 ---
