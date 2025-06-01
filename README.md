@@ -75,7 +75,7 @@ cd HashRipper
 ```
 **3. Install Dependencies**
 ```bash
-pip3 install -r  requirements.txt
+pip3 install -r requirements.txt
 ```
 **4. Run Installer (Linux or Termux)**
 ```bash
