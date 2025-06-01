@@ -26,22 +26,39 @@ The tool automatically detects the environment and installs itself accordingly.
 ## Supported Hash Algorithms
 
 `md5`
+
 `sha1`
+
 `sha224`
+
 `sha256`
+
 `sha384`
+
 `sha512`
+
 `sha3_224`
+
 `sha3_256`
+
 `sha3_384`
+
 `sha3_512`
+
 `blake2b`
+
 `blake2s`
+
 `ntlm`
+
 `md2`
+
 `md4`
+
 `ripemd_160`
+
 `crc32`
+
 `adler_32`
 
 ---
@@ -91,7 +108,7 @@ hashripper [options]
 ## Example Usage
 **Crack a hash using 20 threads:**
 ```bash
-hashripper.py -H 5d41402abc4b2a76b9719d911017c592 -a md5 -w rockyou.txt -t 20
+hashripper -H 5d41402abc4b2a76b9719d911017c592 -a md5 -w rockyou.txt -t 20
 ```
 **Crack from a file and save result:**
 ```bash
