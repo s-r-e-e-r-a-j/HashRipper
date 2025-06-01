@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+
+Developer: Sreeraj
+GitHub: https://github.com/s-r-e-e-r-a-j
+
 import hashlib
 import argparse
 import concurrent.futures
