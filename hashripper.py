@@ -12,7 +12,7 @@ YELLOW = '\033[93m'
 RESET = '\033[0m'
 
 try:
-    from Crypto.Hash import MD2, MD4, RIPEMD
+    from Cryptodome.Hash import MD2, MD4, RIPEMD
     import crcmod
 except ImportError:
     print(f"{RED}[!] Please install required modules: pycryptodome, crcmod{RESET}")
