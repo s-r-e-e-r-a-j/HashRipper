@@ -112,7 +112,7 @@ hashripper -H 5d41402abc4b2a76b9719d911017c592 -a md5 -w /usr/share/wordlists/ro
 ```
 **Crack from a file and save result:**
 ```bash
-hashripper --hashfile /home/kali/Desktop/hash.txt -a sha256 -w /home/kali/Desktop/wordlist.txt -o cracked.txt
+hashripper --hashfile /home/kali/Desktop/hash.txt -a sha256 -w /home/kali/Desktop/wordlist.txt -o /home/kali/Desktop/cracked.txt
 ```
 ---
 
