@@ -15,6 +15,11 @@
 
 ---
 
+## Disclaimer
+HashRipper should be used responsibly and legally. Unauthorized use of this tool to crack hashes without permission is illegal and unethical.
+
+---
+
 ## Compatibility
 - Linux (Debian, RedHat, Arch, etc.)
 - Termux (Android)
