@@ -1,6 +1,6 @@
 #  HashRipper
 
-**HashRipper** is a powerful and fast multi-threaded hash cracking tool written in Python. It supports over 17+ popular hash algorithms including NTLM, MD5, SHA variants, BLAKE2, and more. HashRipper uses a dictionary-based attack and concurrent threading to crack hashes efficiently.
+**HashRipper** is a powerful and fast multi-threaded ethical hacking tool written in Python for cracking hashes. It supports over 17+ popular hash algorithms, including NTLM, MD5, SHA variants, BLAKE2, and more. HashRipper uses a dictionary-based attack and concurrent threading to crack hashes efficiently. It is intended for CTFs (Capture The Flag competitions), penetration testing, cybersecurity research, and educational purposes only.
 
 ---
 
