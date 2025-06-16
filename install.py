@@ -13,7 +13,7 @@ if choice.lower() == 'y':
         bin_path = os.path.join(prefix, 'bin', 'hashripper')
         share_path = os.path.join(prefix, 'share', 'hashripper')
 
-        run('chmod 777 hashripper.py')
+        run('chmod 755 hashripper.py')
         run(f'mkdir -p {share_path}')
         run(f'cp hashripper.py {share_path}/hashripper.py')
 
@@ -30,7 +30,7 @@ if choice.lower() == 'y':
             print("Please run as root or with sudo")
             sys.exit(1)
 
-        run('chmod 777 hashripper.py')
+        run('chmod 755 hashripper.py')
         run('mkdir -p /usr/share/hashripper')
         run('cp hashripper.py /usr/share/hashripper/hashripper.py')
 
