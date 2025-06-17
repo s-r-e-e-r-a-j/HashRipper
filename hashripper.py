@@ -2,7 +2,7 @@
 
 # Developer: Sreeraj
 # GitHub: https://github.com/s-r-e-e-r-a-j
-
+import sys
 try:
     try:
         from Crypto.Hash import MD2, MD4, RIPEMD
@@ -11,12 +11,10 @@ try:
 except:
        print("\033[91m[!] Please install pycryptodome\033[0m")
        sys.exit(1)
-    
 import hashlib
 import argparse
 import concurrent.futures
 import os
-import sys
 import threading
 
 # ANSI color codes
