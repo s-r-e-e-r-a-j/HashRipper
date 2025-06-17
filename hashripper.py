@@ -4,6 +4,7 @@
 # GitHub: https://github.com/s-r-e-e-r-a-j
 
 import sys
+
 try:
     try:
         from Crypto.Hash import MD2, MD4, RIPEMD
@@ -12,6 +13,7 @@ try:
 except ImportError:
        print("\033[91m[!] Please install required library pycryptodome\033[0m")
        sys.exit(1)
+    
 import hashlib
 import argparse
 import concurrent.futures
