@@ -9,7 +9,7 @@ try:
         from Crypto.Hash import MD2, MD4, RIPEMD
     except ImportError:
            from Cryptodome.Hash import MD2, MD4, RIPEMD
-except:
+except ImportError:
        print("\033[91m[!] Please install required library pycryptodome\033[0m")
        sys.exit(1)
 import hashlib
