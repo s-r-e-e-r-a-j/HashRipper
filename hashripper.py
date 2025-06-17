@@ -3,6 +3,15 @@
 # Developer: Sreeraj
 # GitHub: https://github.com/s-r-e-e-r-a-j
 
+try:
+    try:
+        from Crypto.Hash import MD2, MD4, RIPEMD
+    except ImportError:
+           from Cryptodome.Hash import MD2, MD4, RIPEMD
+except:
+       print(f"{RED}[!] Please install pycryptodome {RESET}")
+       sys.exit(1)
+    
 import hashlib
 import argparse
 import concurrent.futures
@@ -17,10 +26,9 @@ YELLOW = '\033[93m'
 RESET = '\033[0m'
 
 try:
-    from Cryptodome.Hash import MD2, MD4, RIPEMD
     import crcmod
 except ImportError:
-    print(f"{RED}[!] Please install required modules: pycryptodome, crcmod{RESET}")
+    print(f"{RED}[!] Please install crcmod{RESET}")
     sys.exit(1)
 
 import zlib
