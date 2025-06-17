@@ -10,7 +10,7 @@ try:
     except ImportError:
            from Cryptodome.Hash import MD2, MD4, RIPEMD
 except:
-       print("\033[91m[!] Please install pycryptodome\033[0m")
+       print("\033[91m[!] Please install required library pycryptodome\033[0m")
        sys.exit(1)
 import hashlib
 import argparse
@@ -27,7 +27,7 @@ RESET = '\033[0m'
 try:
     import crcmod
 except ImportError:
-    print(f"{RED}[!] Please install crcmod{RESET}")
+    print(f"{RED}[!] Please install required library crcmod{RESET}")
     sys.exit(1)
 
 import zlib
