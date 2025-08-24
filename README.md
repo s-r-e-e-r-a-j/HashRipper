@@ -16,7 +16,7 @@
 ---
 
 ## Disclaimer
-HashRipper should be used responsibly and legally. Unauthorized use of this tool to crack hashes without permission is illegal and unethical.
+HashRipper should be used responsibly and legally. Unauthorized use of this tool to crack hashes without permission is illegal and unethical. The author is not responsible for any misuse and it should only be used in controlled environments or on systems for which you have explicit authorization.
 
 ---
 
