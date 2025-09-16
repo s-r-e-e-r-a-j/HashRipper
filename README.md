@@ -21,7 +21,7 @@ HashRipper should be used responsibly and legally. Unauthorized use of this tool
 ---
 
 ## Compatibility
-- Linux (Debian, RedHat, Arch, etc.)
+- Linux (Debian, RHEL, Arch, etc.)
 - Termux (Android)
   
 The tool automatically detects the environment and installs itself accordingly.
