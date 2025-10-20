@@ -129,7 +129,8 @@ def main():
 
     parser.add_argument("-a", "--algorithm", required=True, help="Hash algorithm (e.g., md5, sha256, ripemd_160)")
     parser.add_argument("-w", "--wordlist", required=True, help="Path to wordlist file")
-    parser.add_argument("-t", "--threads", type=int, default=10, help="Number of threads (default: 10)")
+    parser.add_argument("-t", "--threads", nargs="?", const=10, type=int, default=None, help="Number of threads to use (ThreadPoolExecutor).")
+    parser.add_argument("-c", "--cores", nargs="?", const=os.cpu_count(), type=int, default=None, help="Number of cores to use (ProcessPoolExecutor).")
     parser.add_argument("-o", "--output", help="Output file to save the cracked hash")
 
     args = parser.parse_args()
