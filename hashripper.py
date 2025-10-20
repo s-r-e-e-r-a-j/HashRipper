@@ -16,7 +16,7 @@ except ImportError:
     
 import hashlib
 import argparse
-import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
 import os
 import threading
 
@@ -96,14 +96,14 @@ def crack_hash_threaded(target_hash, algorithm, wordlist_path, num_threads, outp
         f = open(wordlist_path, 'r', encoding='latin-1', errors='ignore')
 
     with f:
-        with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+        with (globals().get('ExecutorClass') or ThreadPoolExecutor)(max_workers=num_threads) as executor:
             futures = []
             for line in f:
                 if crack_found_event.is_set():
                     break
                 futures.append(executor.submit(check_word, line, target_hash, hash_func))
 
-            for future in concurrent.futures.as_completed(futures):
+            for future in as_completed(futures):
                 if crack_found_event.is_set():
                     break
 
@@ -144,7 +144,27 @@ def main():
     else:
         target_hash = args.hash.strip()
 
-    success = crack_hash_threaded(target_hash, args.algorithm.lower(), args.wordlist, args.threads, args.output)
+    max_threads = args.threads
+
+    if args.threads and args.cores:
+       print(f"{RED}Error: cannot use both --threads and --cores{RESET}")
+       sys.exit(1)
+
+    if args.cores:
+       globals()['ExecutorClass'] = ProcessPoolExecutor   # or set a local variable
+       max_workers = min(args.cores, os.cpu_count())
+       mode = "process"
+    elif args.threads:
+         globals()['ExecutorClass'] = None
+         max_workers = args.threads
+         mode = "thread"
+    else:
+         globals()['ExecutorClass'] = None   # preserve old default
+         max_workers = 10
+         mode = "thread"
+    max_threads = max_workers
+    
+    success = crack_hash_threaded(target_hash, args.algorithm.lower(), args.wordlist, max_threads, args.output)
     sys.exit(0 if success else 1)
 
 if __name__ == "__main__":
