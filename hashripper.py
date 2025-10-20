@@ -26,12 +26,6 @@ GREEN = '\033[92m'
 YELLOW = '\033[93m'
 RESET = '\033[0m'
 
-try:
-    import crcmod
-except ImportError:
-    print(f"{RED}[!] Please install required library crcmod{RESET}")
-    sys.exit(1)
-
 import zlib
 
 SUPPORTED_HASHES = {
