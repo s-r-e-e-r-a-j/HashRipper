@@ -16,7 +16,7 @@ except ImportError:
     
 import hashlib
 import argparse
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, as_completed
+import concurrent.futures
 import os
 import threading
 
@@ -96,14 +96,14 @@ def crack_hash_threaded(target_hash, algorithm, wordlist_path, num_threads, outp
         f = open(wordlist_path, 'r', encoding='latin-1', errors='ignore')
 
     with f:
-        with (globals().get('ExecutorClass') or ThreadPoolExecutor)(max_workers=num_threads) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
             futures = []
             for line in f:
                 if crack_found_event.is_set():
                     break
                 futures.append(executor.submit(check_word, line, target_hash, hash_func))
 
-            for future in as_completed(futures):
+            for future in concurrent.futures.as_completed(futures):
                 if crack_found_event.is_set():
                     break
 
@@ -129,8 +129,7 @@ def main():
 
     parser.add_argument("-a", "--algorithm", required=True, help="Hash algorithm (e.g., md5, sha256, ripemd_160)")
     parser.add_argument("-w", "--wordlist", required=True, help="Path to wordlist file")
-    parser.add_argument("-t", "--threads", nargs="?", const=10, type=int, default=None, help="Number of threads to use (ThreadPoolExecutor).")
-    parser.add_argument("-c", "--cores", nargs="?", const=os.cpu_count(), type=int, default=None, help="Number of cores to use (ProcessPoolExecutor).")
+    parser.add_argument("-t", "--threads", type=int, default=10, help="Number of threads (default: 10)")
     parser.add_argument("-o", "--output", help="Output file to save the cracked hash")
 
     args = parser.parse_args()
@@ -144,27 +143,7 @@ def main():
     else:
         target_hash = args.hash.strip()
 
-    max_threads = args.threads
-
-    if args.threads and args.cores:
-       print(f"{RED}Error: cannot use both --threads and --cores{RESET}")
-       sys.exit(1)
-
-    if args.cores:
-       globals()['ExecutorClass'] = ProcessPoolExecutor   # or set a local variable
-       max_workers = min(args.cores, os.cpu_count())
-       mode = "process"
-    elif args.threads:
-         globals()['ExecutorClass'] = None
-         max_workers = args.threads
-         mode = "thread"
-    else:
-         globals()['ExecutorClass'] = None   # preserve old default
-         max_workers = 10
-         mode = "thread"
-    max_threads = max_workers
-    
-    success = crack_hash_threaded(target_hash, args.algorithm.lower(), args.wordlist, max_threads, args.output)
+    success = crack_hash_threaded(target_hash, args.algorithm.lower(), args.wordlist, args.threads, args.output)
     sys.exit(0 if success else 1)
 
 if __name__ == "__main__":
