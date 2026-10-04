@@ -1,13 +1,13 @@
 #  HashRipper
 
-**HashRipper** is a powerful and fast multi-threaded ethical hacking tool written in Python for cracking hashes. It supports over 17+ popular hash algorithms including NTLM, MD5, SHA variants, BLAKE2 and more. HashRipper uses a dictionary-based attack and concurrent threading to crack hashes efficiently.
+**HashRipper** is a powerful and fast multi-threaded ethical hacking tool written in C for cracking hashes. It supports over 20+ popular hash algorithms including NTLM, MD5, SHA variants, BLAKE2 and more. HashRipper uses a dictionary-based attack and multi-threading to crack hashes efficiently.
 
 ---
 
 ##  Features
 
 -  **Multi-threaded** cracking for maximum speed
--  Supports **17+ hash algorithms**
+-  Supports **20+ hash algorithms**
 -  Crack hashes from command-line or from file
 -  Option to save cracked results to file
 -  Simple and clean command-line interface
@@ -20,11 +20,22 @@ HashRipper should be used responsibly and legally. Unauthorized use of this tool
 
 ---
 
+## Dependencies
+- GCC / Clang
+- Make
+- OpenSSL
+- xxHash
+- zlib
+
+The tool automatically detects the environment and installs its dependencies if any are missing.
+
+---
+
 ## Compatibility
 - Linux (Debian, RHEL, Arch, etc.)
 - Termux (Android)
-  
-The tool automatically detects the environment and installs itself accordingly.
+
+The tool automatically detects the environment and installs itself.
 
 ---
 
@@ -64,7 +75,13 @@ The tool automatically detects the environment and installs itself accordingly.
 
 `crc32`
 
-`adler_32`
+`xxh32`
+ 
+`xxh64`
+
+`xxh3_64bits`
+ 
+`xxh3_128bits`
 
 ---
 
@@ -78,27 +95,11 @@ git clone https://github.com/s-r-e-e-r-a-j/HashRipper.git
 ```bash
 cd HashRipper
 ```
-**3. Install Dependencies**
+**3. Run Installer (Linux or Termux)**
 ```bash
-pip3 install -r requirements.txt
+sudo bash install.sh
 ```
-**Note for Kali, Parrot, Ubuntu 23.04+, Arch Linux users:**
-
-If you see an error like:
-```go
-error: externally-managed-environment
-```
-then use:
-```bash
-pip3 install -r requirements.txt --break-system-packages
-```
-**4. Run Installer (Linux or Termux)**
-```bash
-python3 install.py
-```
-**then type `y` for install**
-
-**5. Run the tool**
+**4. Run the tool**
 ```bash
 hashripper [options]
 ```
@@ -132,12 +133,10 @@ hashripper --hashfile /home/kali/Desktop/hash.txt -a sha256 -w /home/kali/Deskto
 ---
 
 ## Uninstallation
-**Run the install.py script**
+**Run the uninstall.sh script**
 ```bash
-python3 install.py
+sudo bash uninstall.sh
 ```
-**Then type `n` for uninstall**
-
 ---
 
 ## License
