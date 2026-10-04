@@ -3,13 +3,16 @@
 # Developer: Sreeraj
 # GitHub: https://github.com/s-r-e-e-r-a-j
 
-# Check if running as root
-if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root or with sudo" 
-   exit 1
+if [[ -n "${TERMUX_VERSION:-}" || "${PREFIX:-}" == *"/com.termux/"* || -d "/data/data/com.termux" ]]; then
+    BINARY="${PREFIX}/bin/hashripper"
+else
+    # Check if running as root
+    if [[ $EUID -ne 0 ]]; then
+       echo "This script must be run as root or with sudo" 
+       exit 1
+    fi
+    BINARY="/usr/local/bin/hashripper"
 fi
-
-BINARY="/usr/local/bin/hashripper"
 
 if [ -f "$BINARY" ]; then
     echo "Removing $BINARY..."

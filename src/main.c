@@ -31,10 +31,10 @@ static void usage(const char *prog)
         "  -o, --output FILE    Save successful result\n"
         "  -h, --help           Show this help\n\n"
         "Algorithms:\n"
-        "  md5 sha1 sha224 sha256 sha384 sha512\n"
-        "  sha3_224 sha3_256 sha3_384 sha3_512\n"
+        "  md5 sha1 sha224 sha256 sha384 sha512 sha512_224\n"
+        "  sha512_256 sha3_224 sha3_256 sha3_384 sha3_512\n"
         "  blake2b blake2s ntlm md2 md4 ripemd_160\n"
-        "  crc32 xxh32 xxh64 xxh3_64bits xxh3_128bits\n",
+        "  crc32 whirlpool sm3 xxh32 xxh64 xxh3_64bits xxh3_128bits\n",
         prog);
 }
 

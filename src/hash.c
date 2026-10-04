@@ -49,6 +49,10 @@ hash_algorithm hash_algorithm_from_name(const char *name)
     if (ci_equal(name, "ripemd_160") || ci_equal(name, "ripemd160"))
         return HASH_RIPEMD160;
     if (ci_equal(name, "crc32"))      return HASH_CRC32;
+    if (ci_equal(name, "whirlpool"))  return HASH_WHIRLPOOL;
+    if (ci_equal(name, "sm3"))        return HASH_SM3;
+    if (ci_equal(name, "sha512_224")) return HASH_SHA512_224;
+    if (ci_equal(name, "sha512_256")) return HASH_SHA512_256;
     if (ci_equal(name, "xxh32"))      return HASH_XXH32;
     if (ci_equal(name, "xxh64"))      return HASH_XXH64;
     if (ci_equal(name, "xxh3_64bits") || ci_equal(name, "xxh3_64"))
@@ -64,7 +68,7 @@ const char *hash_algorithm_name(hash_algorithm algorithm)
         "md5", "sha1", "sha224", "sha256", "sha384", "sha512",
         "sha3_224", "sha3_256", "sha3_384", "sha3_512",
         "blake2b", "blake2s", "ntlm", "md2", "md4", "ripemd_160",
-        "crc32", "xxh32", "xxh64", "xxh3_64bits", "xxh3_128bits", "invalid"
+        "crc32", "whirlpool", "sm3", "sha512_224", "sha512_256", "xxh32", "xxh64", "xxh3_64bits", "xxh3_128bits", "invalid"
     };
     if (algorithm < HASH_MD5 || algorithm > HASH_XXH3_128)
         return names[HASH_INVALID];
@@ -91,6 +95,10 @@ static size_t digest_size(hash_algorithm algorithm)
         case HASH_MD4:        return 16;
         case HASH_RIPEMD160:  return 20;
         case HASH_CRC32:      return 4;
+        case HASH_WHIRLPOOL:  return 64;
+        case HASH_SM3:        return 32;
+        case HASH_SHA512_224: return 28;
+        case HASH_SHA512_256: return 32;
         case HASH_XXH32:      return 4;
         case HASH_XXH64:      return 8;
         case HASH_XXH3_64:    return 8;
@@ -123,6 +131,10 @@ static const char *evp_name(hash_algorithm algorithm)
         case HASH_MD2:       return "MD2";
         case HASH_MD4:       return "MD4";
         case HASH_RIPEMD160: return "RIPEMD-160";
+        case HASH_WHIRLPOOL: return "WHIRLPOOL";
+        case HASH_SM3:       return "SM3";
+        case HASH_SHA512_224: return "SHA512-224";
+        case HASH_SHA512_256: return "SHA512_256";
         default:             return NULL;
     }
 }
