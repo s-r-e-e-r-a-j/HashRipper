@@ -1,6 +1,6 @@
 
 // Developer: Sreeraj
-// GitHub: https://github.com/s-r-e-e-r-aj
+// GitHub: https://github.com/s-r-e-e-r-a-j
 
 #define _POSIX_C_SOURCE 200809L
 
