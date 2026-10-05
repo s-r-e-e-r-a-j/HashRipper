@@ -29,6 +29,8 @@ typedef enum {
     HASH_SM3,
     HASH_SHA512_224,
     HASH_SHA512_256,
+    HASH_SHAKE128,
+    HASH_SHAKE256,
     HASH_XXH32,
     HASH_XXH64,
     HASH_XXH3_64,

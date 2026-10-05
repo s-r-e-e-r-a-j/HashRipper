@@ -90,8 +90,21 @@ static void *worker_main(void *arg)
     char *line = NULL;
     size_t capacity = 0;
 
-    const size_t max_hex = 129;
-    char hashed[129];
+    size_t max_hex;
+
+    if (ctx->options->algorithm == HASH_SHAKE128 || ctx->options->algorithm == HASH_SHAKE256) {
+        max_hex = strlen(ctx->options->target_hash) + 1;
+    } else {
+       max_hex = hash_hex_size(ctx->options->algorithm);
+    }
+
+    char *hashed = (char *)malloc(max_hex);
+
+    if (!hashed) {
+       atomic_store(&ctx->fatal_error, true);
+       free(line);
+       return NULL;
+    }
 
     for (;;) {
         if (atomic_load(&ctx->found) || atomic_load(&ctx->fatal_error))
@@ -132,6 +145,7 @@ static void *worker_main(void *arg)
         }
     }
 
+    free(hashed);
     free(line);
     return NULL;
 }
@@ -151,6 +165,24 @@ int crack_hash(const crack_options *options, char **found_password)
     if (options->algorithm == HASH_INVALID) {
         fprintf(stderr, "[!] Unsupported hash algorithm\n");
         return -1;
+    }
+
+
+    if (options->algorithm == HASH_SHAKE128 || options->algorithm == HASH_SHAKE256) {
+
+        size_t target_len = strlen(options->target_hash);
+
+        if (target_len == 0 || (target_len % 2) != 0) {
+           fprintf(stderr, "[!] Invalid SHAKE target hash length\n");
+           return -1;
+        }
+
+        for (size_t i = 0; i < target_len; ++i) {
+            if (!isxdigit((unsigned char)options->target_hash[i])) {
+               fprintf(stderr, "[!] Invalid SHAKE target hash\n");
+               return -1;
+            }
+        }
     }
 
     if (!valid_thread_count(options->num_threads)) {

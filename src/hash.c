@@ -53,6 +53,8 @@ hash_algorithm hash_algorithm_from_name(const char *name)
     if (ci_equal(name, "sm3"))        return HASH_SM3;
     if (ci_equal(name, "sha512_224")) return HASH_SHA512_224;
     if (ci_equal(name, "sha512_256")) return HASH_SHA512_256;
+    if (ci_equal(name, "shake128"))   return HASH_SHAKE128;
+    if (ci_equal(name, "shake256"))   return HASH_SHAKE256;
     if (ci_equal(name, "xxh32"))      return HASH_XXH32;
     if (ci_equal(name, "xxh64"))      return HASH_XXH64;
     if (ci_equal(name, "xxh3_64bits") || ci_equal(name, "xxh3_64"))
@@ -68,7 +70,9 @@ const char *hash_algorithm_name(hash_algorithm algorithm)
         "md5", "sha1", "sha224", "sha256", "sha384", "sha512",
         "sha3_224", "sha3_256", "sha3_384", "sha3_512",
         "blake2b", "blake2s", "ntlm", "md2", "md4", "ripemd_160",
-        "crc32", "whirlpool", "sm3", "sha512_224", "sha512_256", "xxh32", "xxh64", "xxh3_64bits", "xxh3_128bits", "invalid"
+        "crc32", "whirlpool", "sm3", "sha512_224", "sha512_256",
+        "shake128", "shake256", "xxh32", "xxh64", "xxh3_64bits",
+        "xxh3_128bits", "invalid"
     };
     if (algorithm < HASH_MD5 || algorithm > HASH_XXH3_128)
         return names[HASH_INVALID];
@@ -257,6 +261,30 @@ static int openssl_digest(hash_algorithm algorithm,
     return 0;
 }
 
+static int openssl_shake(const char *name,
+                         const unsigned char *data, size_t len,
+                         unsigned char *output, size_t output_len)
+{
+    EVP_MD *md = EVP_MD_fetch(NULL, name, NULL);
+    if (!md)
+        return -1;
+
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    if (!ctx) {
+        EVP_MD_free(md);
+        return -1;
+    }
+
+    int ok = EVP_DigestInit_ex(ctx, md, NULL) == 1 &&
+             EVP_DigestUpdate(ctx, data, len) == 1 &&
+             EVP_DigestFinalXOF(ctx, output, output_len) == 1;
+
+    EVP_MD_CTX_free(ctx);
+    EVP_MD_free(md);
+
+    return ok ? 0 : -1;
+}
+
 static int hash_numeric32(uint32_t value, char *output, size_t output_size)
 {
     if (output_size < 9) return -1;
@@ -272,8 +300,10 @@ int hash_string(hash_algorithm algorithm,
         return -1;
 
     size_t required = hash_hex_size(algorithm);
-    if (!required || output_size < required)
-        return -1;
+    if (algorithm != HASH_SHAKE128 && algorithm != HASH_SHAKE256) {
+       if (!required || output_size < required)
+           return -1;
+    }
 
     if (algorithm == HASH_CRC32) {
         uint32_t v = (uint32_t)crc32(0L, data, (uInt)len);
@@ -316,6 +346,44 @@ int hash_string(hash_algorithm algorithm,
             return -1;
         input = converted;
         algorithm = HASH_MD4;
+    }
+
+    if (algorithm == HASH_SHAKE128 || algorithm == HASH_SHAKE256) {
+        const char *name = (algorithm == HASH_SHAKE128) ? "SHAKE-128" : "SHAKE-256";
+
+        if (output_size < 3 || ((output_size - 1) % 2) != 0) {
+             free(converted);
+             return -1;
+        }
+
+        size_t output_len = (output_size - 1) / 2;
+
+        unsigned char *digest = malloc(output_len);
+        if (!digest) {
+           free(converted);
+           return -1;
+        }
+
+        int rc = openssl_shake(
+           name,
+           input,
+           input_len,
+           digest,
+           output_len
+        );
+
+        if (rc != 0) {
+           free(digest);
+           free(converted);
+           return -1;
+        }
+
+        hex_encode(digest, output_len, output);
+
+        free(digest);
+        free(converted);
+
+        return 0;
     }
 
     unsigned char digest[EVP_MAX_MD_SIZE];
