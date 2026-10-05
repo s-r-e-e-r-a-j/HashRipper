@@ -108,6 +108,7 @@ git clone https://github.com/s-r-e-e-r-a-j/HashRipper.git
 cd HashRipper
 ```
 **3. Run Installer**
+
 *Linux*
 ```bash
 sudo bash install.sh
@@ -151,8 +152,14 @@ hashripper --hashfile /home/kali/Desktop/hash.txt -a sha256 -w /home/kali/Deskto
 
 ## Uninstallation
 **Run the uninstall.sh script**
+
+*Linux*
 ```bash
 sudo bash uninstall.sh
+```
+*Termux*
+```bash
+bash uninstall.sh
 ```
 ---
 
