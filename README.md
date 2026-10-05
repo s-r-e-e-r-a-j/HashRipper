@@ -1,13 +1,13 @@
 #  HashRipper
 
-**HashRipper** is a powerful and fast multi-threaded ethical hacking tool written in C for cracking hashes. It supports over 25+ popular hash algorithms including NTLM, MD5, SHA variants, BLAKE2 and more. HashRipper uses a dictionary-based attack and multi-threading to crack hashes efficiently.
+**HashRipper** is a powerful and fast multi-threaded ethical hacking tool written in C for cracking hashes. It supports over 26+ popular hash algorithms including NTLM, MD5, SHA variants, BLAKE2 and more. HashRipper uses a dictionary-based attack and multi-threading to crack hashes efficiently.
 
 ---
 
 ##  Features
 
 -  **Multi-threaded** cracking for maximum speed
--  Supports **25+ hash algorithms**
+-  Supports **26+ hash algorithms**
 -  Crack hashes from command-line or from file
 -  Option to save cracked results to file
 -  Simple and clean command-line interface
