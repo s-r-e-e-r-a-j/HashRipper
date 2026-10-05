@@ -107,9 +107,14 @@ git clone https://github.com/s-r-e-e-r-a-j/HashRipper.git
 ```bash
 cd HashRipper
 ```
-**3. Run Installer (Linux or Termux)**
+**3. Run Installer**
+*Linux*
 ```bash
 sudo bash install.sh
+```
+*Termux*
+```bash
+bash install.sh
 ```
 **4. Run the tool**
 ```bash
