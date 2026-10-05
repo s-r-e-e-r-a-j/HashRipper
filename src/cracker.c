@@ -214,7 +214,7 @@ int crack_hash(const crack_options *options, char **found_password)
         return -1;
     }
 
-    printf("[*] Starting hash cracking using %s with %u threads...\n",
+    printf("\033[93m [*] Starting hash cracking using %s with %u threads...\n \033[0m",
            hash_algorithm_name(options->algorithm), options->num_threads);
 
     unsigned int created = 0;
