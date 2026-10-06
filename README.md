@@ -1,13 +1,13 @@
 #  HashRipper
 
-**HashRipper** is a powerful and fast multi-threaded ethical hacking tool written in C for cracking hashes. It supports over 26+ popular hash algorithms including NTLM, MD5, SHA variants, BLAKE2 and more. HashRipper uses a dictionary-based attack and multi-threading to crack hashes efficiently.
+**HashRipper** is a powerful and fast multi-threaded ethical hacking tool written in C for cracking hashes. It supports over 27+ popular hash algorithms including NTLM, MD5, SHA variants, BLAKE2 and more. HashRipper uses a dictionary-based attack and multi-threading to crack hashes efficiently.
 
 ---
 
 ##  Features
 
 -  **Multi-threaded** cracking for maximum speed
--  Supports **26+ hash algorithms**
+-  Supports **27+ hash algorithms**
 -  Crack hashes from command-line or from file
 -  Option to save cracked results to file
 -  Simple and clean command-line interface
@@ -87,6 +87,8 @@ The tool automatically detects the environment and installs itself.
 
 `shake256`
 
+`pbkdf2` (only Django and Passlib formats are supported)
+
 `xxh32`
  
 `xxh64`
@@ -147,6 +149,13 @@ hashripper -H 5d41402abc4b2a76b9719d911017c592 -a md5 -w /usr/share/wordlists/ro
 **Crack from a file and save result:**
 ```bash
 hashripper --hashfile /home/kali/Desktop/hash.txt -a sha256 -w /home/kali/Desktop/wordlist.txt -o /home/kali/Desktop/cracked.txt
+```
+**Crack a pbkdf2 hash using 20 threads**
+
+> Note: Put PBKDF2 hashes in single quotes — `'pbkdf2_sha256$...$...$...'`. They contain `$` signs. The shell treats `$` as a variable, so without quotes the hash breaks. Other hashes (md5, sha256, …) are just hex, so they do not need quotes.
+
+```bash
+hashripper -H '$pbkdf2-sha256$29000$LOXc25tzDiEkZGxtzdkb4w$VZ/1.JD.V0wIU7TOgYbM/OZQ0bysXDOdSgocBWVy5ok' -a pbkdf2 -w wordlist.txt -t 20
 ```
 ---
 

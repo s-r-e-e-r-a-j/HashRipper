@@ -4,7 +4,7 @@ CPPFLAGS += -Iinclude
 LDLIBS += -lcrypto -lz -lxxhash -pthread
 
 TARGET = hashripper
-SOURCES = src/main.c src/hash.c src/cracker.c
+SOURCES = src/main.c src/hash.c src/cracker.c src/pbkdf2.c
 OBJECTS = $(SOURCES:.c=.o)
 
 .PHONY: all clean

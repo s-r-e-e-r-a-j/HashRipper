@@ -55,6 +55,7 @@ hash_algorithm hash_algorithm_from_name(const char *name)
     if (ci_equal(name, "sha512_256")) return HASH_SHA512_256;
     if (ci_equal(name, "shake128"))   return HASH_SHAKE128;
     if (ci_equal(name, "shake256"))   return HASH_SHAKE256;
+    if (ci_equal(name, "pbkdf2"))     return HASH_PBKDF2;
     if (ci_equal(name, "xxh32"))      return HASH_XXH32;
     if (ci_equal(name, "xxh64"))      return HASH_XXH64;
     if (ci_equal(name, "xxh3_64bits") || ci_equal(name, "xxh3_64"))
@@ -71,8 +72,8 @@ const char *hash_algorithm_name(hash_algorithm algorithm)
         "sha3_224", "sha3_256", "sha3_384", "sha3_512",
         "blake2b", "blake2s", "ntlm", "md2", "md4", "ripemd_160",
         "crc32", "whirlpool", "sm3", "sha512_224", "sha512_256",
-        "shake128", "shake256", "xxh32", "xxh64", "xxh3_64bits",
-        "xxh3_128bits", "invalid"
+        "shake128", "shake256", "pbkdf2", "xxh32", "xxh64",
+        "xxh3_64bits", "xxh3_128bits", "invalid"
     };
     if (algorithm < HASH_MD5 || algorithm > HASH_XXH3_128)
         return names[HASH_INVALID];
