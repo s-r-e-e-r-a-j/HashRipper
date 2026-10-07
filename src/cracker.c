@@ -285,6 +285,7 @@ int crack_hash(const crack_options *options, char **found_password)
         if (!scrypt_parse(options->target_hash, &scrypt)) {
             fprintf(stderr, "[!] Invalid scrypt hash format\n");
             pbkdf2_free(&pbkdf2);
+            scrypt_free(&scrypt);
             return -1;
         }
 
