@@ -6,6 +6,7 @@
 
 #include "cracker.h"
 #include "pbkdf2.h"
+#include "scrypt.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -30,6 +31,7 @@ typedef struct {
     char *found_password;
     pthread_mutex_t result_lock;
     const pbkdf2_params *pbkdf2;
+    const scrypt_params *scrypt;
 } worker_context;
 
 static char *trim_strip(char *s)
@@ -197,6 +199,51 @@ static void *pbkdf2_worker_main(void *arg)
     return NULL;
 }
 
+static void *scrypt_worker_main(void *arg)
+{
+    worker_context *ctx = (worker_context *)arg;
+    char *line = NULL;
+    size_t capacity = 0;
+
+    for (;;) {
+        if (atomic_load(&ctx->found) || atomic_load(&ctx->fatal_error))
+            break;
+
+        pthread_mutex_lock(&ctx->file_lock);
+        int rc = read_line_dynamic(ctx->fp, &line, &capacity);
+        pthread_mutex_unlock(&ctx->file_lock);
+
+        if (rc == 0)
+            break;
+
+        if (rc < 0) {
+            atomic_store(&ctx->fatal_error, true);
+            break;
+        }
+
+        char *word = trim_strip(line);
+
+        if (scrypt_verify(ctx->scrypt, word)) {
+            pthread_mutex_lock(&ctx->result_lock);
+
+            if (!atomic_load(&ctx->found)) {
+                ctx->found_password = strdup(word);
+                if (!ctx->found_password) {
+                    atomic_store(&ctx->fatal_error, true);
+                } else {
+                    atomic_store(&ctx->found, true);
+                }
+            }
+
+            pthread_mutex_unlock(&ctx->result_lock);
+            break;
+        }
+    }
+
+    free(line);
+    return NULL;
+}
+
 static int valid_thread_count(unsigned int n)
 {
     return n >= 1 && n <= 4096;
@@ -231,6 +278,23 @@ int crack_hash(const crack_options *options, char **found_password)
                pbkdf2.target_len);
     }
 
+    scrypt_params scrypt = {0};
+    const scrypt_params *scrypt_ptr = NULL;
+
+    if (options->algorithm == HASH_SCRYPT) {
+        if (!scrypt_parse(options->target_hash, &scrypt)) {
+            fprintf(stderr, "[!] Invalid scrypt hash format\n");
+            pbkdf2_free(&pbkdf2);
+            return -1;
+        }
+
+        scrypt_ptr = &scrypt;
+
+        printf("\033[93m [*] scrypt: ln=%u r=%u p=%u, "
+               "derived key: %zu bytes\033[0m\n",
+               scrypt.ln, scrypt.r, scrypt.p, scrypt.target_len);
+    }
+
     if (options->algorithm == HASH_SHAKE128 || options->algorithm == HASH_SHAKE256) {
 
         size_t target_len = strlen(options->target_hash);
@@ -238,6 +302,7 @@ int crack_hash(const crack_options *options, char **found_password)
         if (target_len == 0 || (target_len % 2) != 0) {
            fprintf(stderr, "[!] Invalid SHAKE target hash length\n");
            pbkdf2_free(&pbkdf2);
+           scrypt_free(&scrypt);
            return -1;
         }
 
@@ -245,6 +310,7 @@ int crack_hash(const crack_options *options, char **found_password)
             if (!isxdigit((unsigned char)options->target_hash[i])) {
                fprintf(stderr, "[!] Invalid SHAKE target hash\n");
                pbkdf2_free(&pbkdf2);
+               scrypt_free(&scrypt);
                return -1;
             }
         }
@@ -253,6 +319,7 @@ int crack_hash(const crack_options *options, char **found_password)
     if (!valid_thread_count(options->num_threads)) {
         fprintf(stderr, "[!] Thread count must be between 1 and 4096\n");
         pbkdf2_free(&pbkdf2);
+        scrypt_free(&scrypt);
         return -1;
     }
 
@@ -260,6 +327,7 @@ int crack_hash(const crack_options *options, char **found_password)
     if (!fp) {
         fprintf(stderr, "[!] Cannot open wordlist '%s': %s\n", options->wordlist_path, strerror(errno));
         pbkdf2_free(&pbkdf2);
+        scrypt_free(&scrypt);
         return -1;
     }
 
@@ -268,6 +336,7 @@ int crack_hash(const crack_options *options, char **found_password)
     ctx.fp = fp;
     ctx.options = options;
     ctx.pbkdf2 = pbkdf2_ptr;
+    ctx.scrypt = scrypt_ptr;
 
     pthread_mutex_init(&ctx.file_lock, NULL);
     pthread_mutex_init(&ctx.result_lock, NULL);
@@ -280,13 +349,26 @@ int crack_hash(const crack_options *options, char **found_password)
         pthread_mutex_destroy(&ctx.file_lock);
         pthread_mutex_destroy(&ctx.result_lock);
         pbkdf2_free(&pbkdf2);
+        scrypt_free(&scrypt);
         return -1;
     }
 
     printf("\033[93m [*] Starting hash cracking using %s with %u threads...\n \033[0m",
            hash_algorithm_name(options->algorithm), options->num_threads);
 
-    void *(*worker_fn)(void *) = (options->algorithm == HASH_PBKDF2) ? pbkdf2_worker_main : worker_main;
+    void *(*worker_fn)(void *);
+
+    switch (options->algorithm) {
+    case HASH_PBKDF2:
+        worker_fn = pbkdf2_worker_main;
+        break;
+    case HASH_SCRYPT:
+        worker_fn = scrypt_worker_main;
+        break;
+    default:
+        worker_fn = worker_main;
+        break;
+    }
 
     unsigned int created = 0;
     for (unsigned int i = 0; i < options->num_threads; ++i) {
@@ -311,6 +393,7 @@ int crack_hash(const crack_options *options, char **found_password)
         pthread_mutex_destroy(&ctx.file_lock);
         pthread_mutex_destroy(&ctx.result_lock);
         pbkdf2_free(&pbkdf2);
+        scrypt_free(&scrypt);
         return -1;
     }
 
@@ -319,11 +402,13 @@ int crack_hash(const crack_options *options, char **found_password)
         pthread_mutex_destroy(&ctx.file_lock);
         pthread_mutex_destroy(&ctx.result_lock);
         pbkdf2_free(&pbkdf2);
+        scrypt_free(&scrypt);
         return 1;
     }
 
     pthread_mutex_destroy(&ctx.file_lock);
     pthread_mutex_destroy(&ctx.result_lock);
     pbkdf2_free(&pbkdf2);
+    scrypt_free(&scrypt);
     return 0;
 }
