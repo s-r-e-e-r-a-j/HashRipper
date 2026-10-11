@@ -7,6 +7,7 @@
 #include "cracker.h"
 #include "pbkdf2.h"
 #include "scrypt.h"
+#include "argon2_crack.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -32,6 +33,7 @@ typedef struct {
     pthread_mutex_t result_lock;
     const pbkdf2_params *pbkdf2;
     const scrypt_params *scrypt;
+    const argon2_params *argon2;
 } worker_context;
 
 static char *trim_strip(char *s)
@@ -244,6 +246,51 @@ static void *scrypt_worker_main(void *arg)
     return NULL;
 }
 
+static void *argon2_worker_main(void *arg)
+{
+    worker_context *ctx = (worker_context *)arg;
+    char *line = NULL;
+    size_t capacity = 0;
+
+    for (;;) {
+        if (atomic_load(&ctx->found) || atomic_load(&ctx->fatal_error))
+            break;
+
+        pthread_mutex_lock(&ctx->file_lock);
+        int rc = read_line_dynamic(ctx->fp, &line, &capacity);
+        pthread_mutex_unlock(&ctx->file_lock);
+
+        if (rc == 0)
+            break;
+
+        if (rc < 0) {
+            atomic_store(&ctx->fatal_error, true);
+            break;
+        }
+
+        char *word = trim_strip(line);
+
+        if (argon2id_check(ctx->argon2, word)) {
+            pthread_mutex_lock(&ctx->result_lock);
+
+            if (!atomic_load(&ctx->found)) {
+                ctx->found_password = strdup(word);
+                if (!ctx->found_password) {
+                    atomic_store(&ctx->fatal_error, true);
+                } else {
+                    atomic_store(&ctx->found, true);
+                }
+            }
+
+            pthread_mutex_unlock(&ctx->result_lock);
+            break;
+        }
+    }
+
+    free(line);
+    return NULL;
+}
+
 static int valid_thread_count(unsigned int n)
 {
     return n >= 1 && n <= 4096;
@@ -296,6 +343,29 @@ int crack_hash(const crack_options *options, char **found_password)
                scrypt.ln, scrypt.r, scrypt.p, scrypt.target_len);
     }
 
+    argon2_params argon2 = {0};
+    const argon2_params *argon2_ptr = NULL;
+
+    if (options->algorithm == HASH_ARGON2ID) {
+        if (!argon2_parse(options->target_hash, &argon2)) {
+            fprintf(stderr, "[!] Invalid Argon2id hash format\n");
+            pbkdf2_free(&pbkdf2);
+            scrypt_free(&scrypt);
+            argon2_free(&argon2);
+            return -1;
+        }
+
+        argon2_ptr = &argon2;
+
+        printf("\033[93m [*] Argon2id: v=%u m=%u KiB t=%u p=%u, "
+               "derived key: %u bytes\033[0m\n",
+               argon2.version,
+               argon2.memory_kib,
+               argon2.iterations,
+               argon2.parallelism,
+               argon2.hash_len);
+    }
+
     if (options->algorithm == HASH_SHAKE128 || options->algorithm == HASH_SHAKE256) {
 
         size_t target_len = strlen(options->target_hash);
@@ -304,6 +374,7 @@ int crack_hash(const crack_options *options, char **found_password)
            fprintf(stderr, "[!] Invalid SHAKE target hash length\n");
            pbkdf2_free(&pbkdf2);
            scrypt_free(&scrypt);
+           argon2_free(&argon2);
            return -1;
         }
 
@@ -312,6 +383,7 @@ int crack_hash(const crack_options *options, char **found_password)
                fprintf(stderr, "[!] Invalid SHAKE target hash\n");
                pbkdf2_free(&pbkdf2);
                scrypt_free(&scrypt);
+               argon2_free(&argon2);
                return -1;
             }
         }
@@ -321,6 +393,7 @@ int crack_hash(const crack_options *options, char **found_password)
         fprintf(stderr, "[!] Thread count must be between 1 and 4096\n");
         pbkdf2_free(&pbkdf2);
         scrypt_free(&scrypt);
+        argon2_free(&argon2);
         return -1;
     }
 
@@ -329,6 +402,7 @@ int crack_hash(const crack_options *options, char **found_password)
         fprintf(stderr, "[!] Cannot open wordlist '%s': %s\n", options->wordlist_path, strerror(errno));
         pbkdf2_free(&pbkdf2);
         scrypt_free(&scrypt);
+        argon2_free(&argon2);
         return -1;
     }
 
@@ -338,6 +412,7 @@ int crack_hash(const crack_options *options, char **found_password)
     ctx.options = options;
     ctx.pbkdf2 = pbkdf2_ptr;
     ctx.scrypt = scrypt_ptr;
+    ctx.argon2 = argon2_ptr;
 
     pthread_mutex_init(&ctx.file_lock, NULL);
     pthread_mutex_init(&ctx.result_lock, NULL);
@@ -351,6 +426,7 @@ int crack_hash(const crack_options *options, char **found_password)
         pthread_mutex_destroy(&ctx.result_lock);
         pbkdf2_free(&pbkdf2);
         scrypt_free(&scrypt);
+        argon2_free(&argon2);
         return -1;
     }
 
@@ -365,6 +441,9 @@ int crack_hash(const crack_options *options, char **found_password)
         break;
     case HASH_SCRYPT:
         worker_fn = scrypt_worker_main;
+        break;
+    case HASH_ARGON2ID:
+        worker_fn = argon2_worker_main;
         break;
     default:
         worker_fn = worker_main;
@@ -395,6 +474,7 @@ int crack_hash(const crack_options *options, char **found_password)
         pthread_mutex_destroy(&ctx.result_lock);
         pbkdf2_free(&pbkdf2);
         scrypt_free(&scrypt);
+        argon2_free(&argon2);
         return -1;
     }
 
@@ -404,6 +484,7 @@ int crack_hash(const crack_options *options, char **found_password)
         pthread_mutex_destroy(&ctx.result_lock);
         pbkdf2_free(&pbkdf2);
         scrypt_free(&scrypt);
+        argon2_free(&argon2);
         return 1;
     }
 
@@ -411,5 +492,6 @@ int crack_hash(const crack_options *options, char **found_password)
     pthread_mutex_destroy(&ctx.result_lock);
     pbkdf2_free(&pbkdf2);
     scrypt_free(&scrypt);
+    argon2_free(&argon2);
     return 0;
 }

@@ -1,10 +1,10 @@
 CC ?= cc
 CFLAGS ?= -O2 -Wall -Wextra -Wpedantic -std=c11
 CPPFLAGS += -Iinclude
-LDLIBS += -lcrypto -lz -lxxhash -pthread
+LDLIBS += -lcrypto -lz -lxxhash -largon2 -pthread
 
 TARGET = hashripper
-SOURCES = src/main.c src/hash.c src/cracker.c src/pbkdf2.c src/scrypt.c
+SOURCES = src/main.c src/hash.c src/cracker.c src/pbkdf2.c src/scrypt.c src/argon2.c
 OBJECTS = $(SOURCES:.c=.o)
 
 .PHONY: all clean

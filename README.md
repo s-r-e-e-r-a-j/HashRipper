@@ -1,13 +1,13 @@
 #  HashRipper
 
-**HashRipper** is a powerful and fast multi-threaded ethical hacking tool written in C for cracking hashes. It supports over 28+ popular hash algorithms including NTLM, MD5, SHA variants, BLAKE2 and more. HashRipper uses a dictionary-based attack and multi-threading to crack hashes efficiently.
+**HashRipper** is a powerful and fast multi-threaded ethical hacking tool written in C for cracking hashes. It supports over 29+ popular hash algorithms including NTLM, MD5, SHA variants, BLAKE2 and more. HashRipper uses a dictionary-based attack and multi-threading to crack hashes efficiently.
 
 ---
 
 ##  Features
 
 -  **Multi-threaded** cracking for maximum speed
--  Supports **28+ hash algorithms**
+-  Supports **29+ hash algorithms**
 -  Crack hashes from command-line or from file
 -  Option to save cracked results to file
 -  Simple and clean command-line interface
@@ -26,6 +26,7 @@ HashRipper should be used responsibly and legally. Unauthorized use of this tool
 - OpenSSL
 - xxHash
 - zlib
+- libargon2
 
 The tool automatically detects the environment and installs its dependencies if any are missing.
 
@@ -91,6 +92,8 @@ The tool automatically detects the environment and installs itself.
 
 `scrypt` (Supports PHC and DragonFly/OpenBSD MCF formats only)
 
+`argon2id` (only the PHC string format is supported)
+
 `xxh32`
  
 `xxh64`
@@ -154,7 +157,7 @@ hashripper --hashfile /home/kali/Desktop/hash.txt -a sha256 -w /home/kali/Deskto
 ```
 **Crack a pbkdf2 hash using 20 threads**
 
-> Note: Put PBKDF2 hashes in single quotes — `'pbkdf2_sha256$...$...$...'`. They contain `$` signs. The shell treats `$` as a variable, so without quotes the hash breaks. Other hashes (md5, sha256, …) are just hex, so they do not need quotes.
+> **Note:** Put PBKDF2 hashes in single quotes — `'pbkdf2_sha256$...$...$...'`. They contain `$` signs. The shell treats `$` as a variable, so without quotes the hash breaks. Other hashes (md5, sha256, …) are just hex, so they do not need quotes.
 
 ```bash
 hashripper -H '$pbkdf2-sha256$29000$LOXc25tzDiEkZGxtzdkb4w$VZ/1.JD.V0wIU7TOgYbM/OZQ0bysXDOdSgocBWVy5ok' -a pbkdf2 -w wordlist.txt -t 20
@@ -162,12 +165,19 @@ hashripper -H '$pbkdf2-sha256$29000$LOXc25tzDiEkZGxtzdkb4w$VZ/1.JD.V0wIU7TOgYbM/
 
 **Crack a scrypt hash using 15 threads**
 
-> Note: Put scrypt hashes in single quotes — `'$scrypt$ln=16,r=8,p=1$...$...'` or `'$7$16384$8$1$...$...'`. They contain `$` signs. The shell treats `$` as a variable, so without quotes the hash breaks. Other hashes (md5, sha256, …) are just hex, so they do not need quotes.
+> **Note:** Put scrypt hashes in single quotes — `'$scrypt$ln=16,r=8,p=1$...$...'` or `'$7$16384$8$1$...$...'`. They contain `$` signs. The shell treats `$` as a variable, so without quotes the hash breaks. Other hashes (md5, sha256, …) are just hex, so they do not need quotes.
 
 ```bash
 hashripper -H '$scrypt$ln=16,r=8,p=1$vZdSqnVuba0VIgTAmHPOmQ$gA0DyNxpCxSno3znCvilse4kHR4ILdUE7vqu7l/fZ18' -a scrypt -w rockyou.txt -t 15
 ```
 
+**Crack a argon2id hash using 15 threads**
+
+> **Note:** Put Argon2id hashes in single quotes — `'$argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHQ$RdescudvJCsgt3ub+b+dWRWJTmaaJObG'`. They contain `$` signs. The shell treats `$` as a variable, so without quotes the hash breaks. Other hashes (md5, sha256, …) are just hex, so they do not need quotes.
+
+```bash
+hashripper -H '$argon2id$v=19$m=65536,t=3,p=4$c29tZXNhbHQ$Zh/vvW8pvLyPRkarwyqdekZFu1wFlTf4pVh/Ma2+zM0' -a argon2id -w rockyou.txt -t 15
+```
 ---
 
 ## Uninstallation

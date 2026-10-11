@@ -33,6 +33,7 @@ typedef enum {
     HASH_SHAKE256,
     HASH_PBKDF2,
     HASH_SCRYPT,
+    HASH_ARGON2ID,
     HASH_XXH32,
     HASH_XXH64,
     HASH_XXH3_64,

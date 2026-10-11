@@ -38,7 +38,7 @@ elif command -v pacman >/dev/null 2>&1; then
     PM="pacman"
 else
     echo "[!] No supported package manager found."
-    echo "    Install gcc, make, OpenSSL development files, zlib development files, and xxHash development files manually."
+    echo "    Install gcc, make, OpenSSL development files, zlib development files, libargon2 development files, and xxHash development files manually."
     exit 1
 fi
 
@@ -49,6 +49,7 @@ need_make=0
 need_openssl=0
 need_zlib=0
 need_xxhash=0
+need_argon2=0
 
 command -v clang >/dev/null 2>&1 || command -v gcc >/dev/null 2>&1 || need_gcc=1
 command -v make >/dev/null 2>&1 || need_make=1
@@ -56,10 +57,12 @@ if [[ $IS_TERMUX -eq 1 ]]; then
     [[ -f "$PREFIX/include/openssl/evp.h" ]] || need_openssl=1
     [[ -f "$PREFIX/include/zlib.h" ]] || need_zlib=1
     [[ -f "$PREFIX/include/xxhash.h" ]] || need_xxhash=1
+    [[ -f "$PREFIX/include/argon2.h" ]] || need_argon2=1
 else
     [[ -f /usr/include/openssl/evp.h || -f /usr/local/include/openssl/evp.h ]] || need_openssl=1
     [[ -f /usr/include/zlib.h || -f /usr/local/include/zlib.h ]] || need_zlib=1
     [[ -f /usr/include/xxhash.h || -f /usr/local/include/xxhash.h ]] || need_xxhash=1
+    [[ -f /usr/include/argon2.h || -f /usr/local/include/argon2.h ]] || need_argon2=1
 fi
 
 install_deps_termux() {
@@ -69,6 +72,7 @@ install_deps_termux() {
     [[ $need_openssl -eq 1 ]] && pkgs+=(openssl)
     [[ $need_zlib -eq 1 ]] && pkgs+=(zlib)
     [[ $need_xxhash -eq 1 ]] && pkgs+=(xxhash)
+    [[ $need_argon2 -eq 1 ]] && pkgs+=(argon2)
     if [[ ${#pkgs[@]} -gt 0 ]]; then
         pkg update
         pkg install -y "${pkgs[@]}"
@@ -83,6 +87,7 @@ install_deps_apt() {
     [[ $need_openssl -eq 1 ]] && pkgs+=(libssl-dev)
     [[ $need_zlib -eq 1 ]] && pkgs+=(zlib1g-dev)
     [[ $need_xxhash -eq 1 ]] && pkgs+=(libxxhash-dev)
+    [[ $need_argon2 -eq 1 ]] && pkgs+=(libargon2-dev)
     if [[ ${#pkgs[@]} -gt 0 ]]; then
         apt-get update
         apt-get install -y "${pkgs[@]}"
@@ -101,6 +106,7 @@ install_deps_rhel() {
     [[ $need_openssl -eq 1 ]] && pkgs+=(openssl-devel)
     [[ $need_zlib -eq 1 ]] && pkgs+=(zlib-devel)
     [[ $need_xxhash -eq 1 ]] && pkgs+=(xxhash-devel)
+    [[ $need_argon2 -eq 1 ]] && pkgs+=(libargon2-devel)
     if [[ ${#pkgs[@]} -gt 0 ]]; then
         if command -v dnf >/dev/null 2>&1; then
             dnf install -y "${pkgs[@]}"
@@ -118,6 +124,7 @@ install_deps_arch() {
     [[ $need_openssl -eq 1 ]] && pkgs+=(openssl)
     [[ $need_zlib -eq 1 ]] && pkgs+=(zlib)
     [[ $need_xxhash -eq 1 ]] && pkgs+=(xxhash)
+    [[ $need_argon2 -eq 1 ]] && pkgs+=(argon2)
     if [[ ${#pkgs[@]} -gt 0 ]]; then
         pacman -S --noconfirm --needed "${pkgs[@]}"
     fi
@@ -139,17 +146,26 @@ if [[ $IS_TERMUX -eq 1 ]]; then
     [[ -f "$PREFIX/include/openssl/evp.h" ]] || { echo "[!] OpenSSL headers not found."; exit 1; }
     [[ -f "$PREFIX/include/zlib.h" ]] || { echo "[!] zlib headers not found."; exit 1; }
     [[ -f "$PREFIX/include/xxhash.h" ]] || { echo "[!] xxHash headers not found."; exit 1; }
+    [[ -f "$PREFIX/include/argon2.h" ]] || { echo "[!] libargon2 headers not found."; exit 1; }
 else
     [[ -f /usr/include/openssl/evp.h || -f /usr/local/include/openssl/evp.h ]] || { echo "[!] OpenSSL headers not found."; exit 1; }
     [[ -f /usr/include/zlib.h || -f /usr/local/include/zlib.h ]] || { echo "[!] zlib headers not found."; exit 1; }
     [[ -f /usr/include/xxhash.h || -f /usr/local/include/xxhash.h ]] || { echo "[!] xxHash headers not found."; exit 1; }
+    [[ -f /usr/include/argon2.h || -f /usr/local/include/argon2.h ]] || { echo "[!] libargon2 headers not found."; exit 1; }
 fi
 
 BUILD_TARGET="hashripper"
 
+if command -v gcc >/dev/null 2>&1; then
+    CC=gcc
+elif command -v clang >/dev/null 2>&1; then
+    CC=clang
+fi
+
 echo "[*] Building $BUILD_TARGET..."
 make clean >/dev/null 2>&1 || true
-make
+echo "Using compiler: $CC"
+make CC="$CC"
 
 if [[ ! -f "$BUILD_TARGET" ]]; then
     echo "[!] Build completed but '$BUILD_TARGET' was not produced."
